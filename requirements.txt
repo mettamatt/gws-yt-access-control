@@ -1,7 +1,5 @@
-Flask
 croniter
-google-auth
-google-api-python-client
+Flask
+google_api_python_client
 google-cloud-scheduler
-google-api-core
 google-cloud-storage
