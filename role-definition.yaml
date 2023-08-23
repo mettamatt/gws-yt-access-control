@@ -1,0 +1,12 @@
+title: Custom OU Manager
+description: Custom role to manage OUs and associated tasks
+stage: GA
+includedPermissions:
+- cloudscheduler.jobs.create
+- cloudscheduler.jobs.delete
+- cloudscheduler.jobs.get
+- storage.buckets.get
+- storage.objects.get
+- storage.objects.create
+- storage.objects.update
+- storage.objects.delete
