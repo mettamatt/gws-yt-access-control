@@ -16,7 +16,7 @@ from google.api_core.exceptions import (
     ServiceUnavailable,
 )
 from google.cloud import scheduler_v1, storage
-import google.auth
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Constants and Configuration Handling
 try:
+    GOOGLE_APPLICATION_CREDENTIALS = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
     ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
     API_KEY = os.environ["API_KEY"]
     USER_EMAIL = os.environ["USER_EMAIL"]
@@ -54,28 +55,48 @@ except KeyError as key_error:
     logger.error("Missing environment variable: %s", key_error)
     raise RuntimeError(f"Missing environment variable: {key_error}") from key_error
 
+SCOPES = ["https://www.googleapis.com/auth/admin.directory.user"]
+
 
 # Get Google Service
 def get_google_service():
     """Return Google service object after authenticating using service account and admin email."""
-    logger.info("Fetching Google service object.")
-
-    # Fetch the default credentials and delegate them
-    credentials, _ = google.auth.default()
-    delegated_credentials = credentials.with_subject(ADMIN_EMAIL)
-    
-    # Build and return the service
     try:
+        logger.info("Fetching Google service object.")
+
+        # Ensure the environment variable is set
+        if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+            raise ValueError(
+                "Environment variable GOOGLE_APPLICATION_CREDENTIALS is not set."
+            )
+
+        # Load service account credentials
+        credentials = service_account.Credentials.from_service_account_file(
+            GOOGLE_APPLICATION_CREDENTIALS, scopes=SCOPES
+        )
+
+        # Use domain-wide delegation for GSuite/Google Workspace operations
+        delegated_credentials = credentials.with_subject(ADMIN_EMAIL)
+
+        # Build and return the service object for Google Admin SDK's Directory API
         service = build(
             "admin",
             "directory_v1",
             credentials=delegated_credentials,
             cache_discovery=False,
         )
-        logger.info("Created new Google service object.")
+        logger.info("Successfully created new Google service object.")
         return service
-    except (FileNotFoundError, PermissionDenied, ServiceUnavailable,
-            GoogleAPICallError, HttpError, KeyError) as error:
+
+    except (
+        ValueError,
+        FileNotFoundError,
+        PermissionDenied,
+        ServiceUnavailable,
+        GoogleAPICallError,
+        HttpError,
+        KeyError,
+    ) as error:
         logger.error("Error occurred during Google service creation: %s", error)
         raise
 

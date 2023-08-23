@@ -1,7 +1,6 @@
 Flask
 croniter
 google-auth
-google-auth-httplib2
 google-api-python-client
 google-cloud-scheduler
 google-api-core
