@@ -180,8 +180,6 @@ You can use curl to interact with the script once it's deployed:
 
 And there are a myriad of gcloud commands for monitoring. Here's a few. 
 
-Of course! Let's integrate your feedback and use the environment variables you provided earlier.
-
 ### Monitoring, Analyzing, and Debugging using `gcloud`:
 
 #### 1. **Google Cloud Functions Logs**:
